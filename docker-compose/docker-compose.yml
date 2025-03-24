@@ -1,0 +1,54 @@
+services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt
+    ports:
+      - "1883:1883"
+      - "8883:8883"  # SSL/TLS port if you set up SSL
+    volumes:
+      - ${WORK_DIR}/mosquitto/config:/mosquitto/config
+      - ${WORK_DIR}/mosquitto/data:/mosquitto/data
+      - ${WORK_DIR}/mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - ${WORK_DIR}/timescaledb_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    user: '0'
+    depends_on:
+      - timescaledb
+    ports:
+      - "3000:3000"
+    volumes:
+      - ${WORK_DIR}/grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+  python_subscriber:
+    build: ./python_subscriber
+    container_name: python_mqtt_subscriber
+    depends_on:
+      - mqtt
+      - timescaledb
+    environment:
+      - MQTT_HOST=mqtt
+      - MQTT_PORT=${MQTT_PORT}
+      - DB_HOST=timescaledb
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
