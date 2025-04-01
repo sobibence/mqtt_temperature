@@ -19,7 +19,7 @@
 #include "led_control.c"
 #include "scd30_control.c"
 #include "zigbee_temp.c"
-
+#define LED_DISABLE 1
 
 void app_main(){
    configure_led();
@@ -45,7 +45,11 @@ void app_main(){
       scd30_is_data_ready(&data_ready);
       // Check if data is ready
       if (data_ready) {
+         #ifdef LED_DISABLE
+         set_led_color(BLACK);
+         #else
          set_led_color(YELLOW);
+         #endif
          // Read data from the sensor
          float co2, temperature, humidity;
          scd30_read_measurement(&co2, &temperature, &humidity);
@@ -53,13 +57,21 @@ void app_main(){
          // log
          ESP_LOGI("SCD30", "CO2: %.2f ppm, Temperature: %.2f °C, Humidity: %.2f %%", co2, temperature, humidity);
          data_ready = false;
+         #ifdef LED_DISABLE
+         set_led_color(BLACK);
+         #else
          set_led_color(GREEN);
+         #endif
          // Simulate data ready condition
          vTaskDelay(pdMS_TO_TICKS(4300));
       }
       else 
       {
+         #ifdef LED_DISABLE
+         set_led_color(BLACK);
+         #else
          set_led_color(ORANGE);
+         #endif
          vTaskDelay(pdMS_TO_TICKS(200));
          scd30_is_data_ready(&data_ready);
       }
