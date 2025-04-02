@@ -11,11 +11,6 @@ dependencies:
   # username2/component2:
   #   version: "~1.0.0"
   #   # For transient dependencies `public` flag can be set.
-  #   # `public` flag doesn't have an effect dependencies of the `main` component.
-  #   # All dependencies of `main` are public by default.
-  #   public: true
+  #   # `public` flag doesn't have an effect de
   espressif/led_strip: ^3.0.1
-  #espressif/esp_matter: ^1.4.0
-  espressif/esp-zigbee-lib: ^1.6.4
-  espressif/esp-zboss-lib: ^1.6.4
-
+  espressif/esp_matter: ^1.4.0
